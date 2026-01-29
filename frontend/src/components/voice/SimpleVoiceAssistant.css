@@ -1,0 +1,263 @@
+.voice-assistant-container {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    width: 100%;
+
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+    padding: 20px;
+
+    height: 100%;
+
+}
+
+
+
+.visualizer-container {
+
+    width: 100%;
+
+    max-width: 800px;
+
+    height: 300px;
+
+    margin: 0 auto;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+}
+
+
+
+.control-section {
+
+    width: 100%;
+
+    max-width: 800px;
+
+    margin-top: 20px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+}
+
+
+
+.conversation {
+
+    padding: 20px;
+
+    max-height: 300px;
+
+    overflow-y: auto;
+
+    width: 100%;
+
+    height: 100%;
+
+    border: 1px solid #eaeaea;
+
+    border-radius: 8px;
+
+    margin-top: 20px;
+
+    background-color: #fff;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+}
+
+
+
+.message {
+
+    margin-bottom: 10px;
+
+    padding: 8px 12px;
+
+    border-radius: 8px;
+
+    max-width: 80%;
+
+    line-height: 1.4;
+
+}
+
+
+
+.message-agent {
+
+    align-self: flex-start;
+
+    background-color: #f0f4f8;
+
+    color: #1a365d;
+
+}
+
+
+
+.message-user {
+
+    align-self: flex-end;
+
+    background-color: #e3f2fd;
+
+    color: #0d47a1;
+
+}
+
+
+
+.message-label {
+
+    font-size: 0.8rem;
+
+    font-weight: bold;
+
+    margin-bottom: 2px;
+
+    display: block;
+
+}
+
+
+
+/* Modal Styling */
+
+.modal-overlay {
+
+    position: fixed;
+
+    top: 0;
+
+    left: 0;
+
+    width: 100%;
+
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.5);
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    z-index: 1000;
+
+}
+
+
+
+.modal-content {
+
+    background-color: white;
+
+    padding: 20px;
+
+    border-radius: 12px;
+
+    width: 90%;
+
+    max-width: 600px;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+    position: relative;
+
+}
+
+
+
+.close-button {
+
+    position: absolute;
+
+    top: 10px;
+
+    right: 15px;
+
+    background: none;
+
+    border: none;
+
+    font-size: 1.5rem;
+
+    cursor: pointer;
+
+    color: #666;
+
+}
+
+
+
+.voice-widget-btn {
+
+    position: fixed;
+
+    bottom: 30px;
+
+    right: 30px;
+
+    width: 60px;
+
+    height: 60px;
+
+    border-radius: 30px;
+
+    background-color: #2563eb;
+
+    color: white;
+
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+
+    border: none;
+
+    cursor: pointer;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    z-index: 999;
+
+    transition: transform 0.2s, background-color 0.2s;
+
+}
+
+
+
+.voice-widget-btn:hover {
+
+    transform: scale(1.05);
+
+    background-color: #1d4ed8;
+
+}
