@@ -35,33 +35,41 @@ const Universities: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     // Initial Fetch
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // 1. Fetch User Preferences (Still fetch for other potential uses, but don't filter)
-                await fetch(`${API_URL}/onboarding`, { credentials: 'include' });
+    const fetchData = React.useCallback(async () => {
+        try {
+            // 1. Fetch User Preferences (Still fetch for other potential uses, but don't filter)
+            await fetch(`${API_URL}/onboarding`, { credentials: 'include' });
 
-                // 2. Fetch User Selections
-                const selRes = await fetch(`${API_URL}/universities`, { credentials: 'include' });
-                const selections: { university_id: string; status: string }[] = selRes.ok ? await selRes.json() : [];
+            // 2. Fetch User Selections
+            const selRes = await fetch(`${API_URL}/universities`, { credentials: 'include' });
+            const selections: { university_id: string; status: string }[] = selRes.ok ? await selRes.json() : [];
 
-                const sIds = selections.filter(s => s.status === 'shortlisted').map(s => s.university_id);
-                const lIds = selections.filter(s => s.status === 'locked').map(s => s.university_id);
-                setShortlistedIds(sIds);
-                setLockedIds(lIds);
+            const sIds = selections.filter(s => s.status === 'shortlisted').map(s => s.university_id);
+            const lIds = selections.filter(s => s.status === 'locked').map(s => s.university_id);
+            setShortlistedIds(sIds);
+            setLockedIds(lIds);
 
-                // 3. Set All Universities (No Filtering)
-                setAllUniversities(universities);
+            // 3. Set All Universities (No Filtering)
+            setAllUniversities(universities);
 
-            } catch (e) {
-                console.error(e);
-                setAllUniversities(universities);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
+        } catch (e) {
+            console.error(e);
+            setAllUniversities(universities);
+        } finally {
+            setLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchData();
+
+        const handleUpdate = () => {
+            console.log("Refreshing university list...");
+            fetchData();
+        };
+        window.addEventListener('university-update', handleUpdate);
+        return () => window.removeEventListener('university-update', handleUpdate);
+    }, [fetchData]);
 
     // Actions
     const handleShortlist = async (id: string) => {

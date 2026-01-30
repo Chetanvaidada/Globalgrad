@@ -9,12 +9,12 @@ import {
     useTrackTranscription,
 
     useLocalParticipant,
-
+    useRoomContext,
 } from "@livekit/components-react";
 
-import { Track, Participant } from "livekit-client";
+import { Track, Participant, RoomEvent } from "livekit-client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import "./SimpleVoiceAssistant.css";
 
@@ -59,6 +59,7 @@ const SimpleVoiceAssistant = () => {
 
 
     const [messages, setMessages] = useState<any[]>([]);
+    const conversationRef = useRef<HTMLDivElement>(null);
 
 
 
@@ -75,6 +76,40 @@ const SimpleVoiceAssistant = () => {
         setMessages(allMessages);
 
     }, [agentTranscriptions, userTranscriptions]);
+
+    const room = useRoomContext();
+
+    useEffect(() => {
+        if (!room) return;
+
+        const onDataReceived = (payload: Uint8Array, _participant?: Participant, _kind?: any, topic?: string) => {
+            if (topic === "university_update") {
+                const decoder = new TextDecoder();
+                const strData = decoder.decode(payload);
+                try {
+                    const data = JSON.parse(strData);
+                    console.log("Received university update:", data);
+                    // Dispatch global event for other components to refresh
+                    window.dispatchEvent(new Event('university-update'));
+                } catch (e) {
+                    console.error("Failed to parse data message", e);
+                }
+            }
+        };
+
+        room.on(RoomEvent.DataReceived, onDataReceived);
+        return () => {
+            room.off(RoomEvent.DataReceived, onDataReceived);
+        };
+    }, [room]);
+
+
+    // Auto-scroll to bottom when messages update
+    useEffect(() => {
+        if (conversationRef.current) {
+            conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
+        }
+    }, [messages]);
 
 
 
@@ -94,9 +129,9 @@ const SimpleVoiceAssistant = () => {
 
             </div>
 
-            <div className="conversation">
+            <div className="conversation" ref={conversationRef}>
 
-                {messages.length === 0 && <div style={{ textAlign: "center", color: "#888", padding: "20px" }}>Say "Hello" to start...</div>}
+                {messages.length === 0 && <div style={{ textAlign: "center", color: "#888", padding: "20px" }}>Please wait a few seconds for the bot to start speaking...</div>}
 
                 {messages.map((msg, index) => (
 
@@ -105,7 +140,6 @@ const SimpleVoiceAssistant = () => {
                 ))}
 
             </div>
-
         </div>
 
     );

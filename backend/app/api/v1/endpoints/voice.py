@@ -17,8 +17,9 @@ def get_voice_token(
     if not settings.LIVEKIT_API_KEY or not settings.LIVEKIT_API_SECRET:
         raise HTTPException(status_code=500, detail="LiveKit credentials not configured")
 
-    # Use a stable room name per user so multiple tabs/playground join the same room
-    room_name = f"counsellor-{current_user.id}"
+    # Use a unique room name each time for a fresh session
+    session_id = str(uuid.uuid4())[:8]
+    room_name = f"counsellor-{current_user.id}-{session_id}"
     
     # Identify the user by their ID so the Agent can look them up
     # ensure identity is a string

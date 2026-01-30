@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Mic } from "lucide-react";
 import LiveKitModal from "./LiveKitModal";
 import { useAuth } from "../../context/AuthContext";
@@ -7,9 +8,14 @@ import "./SimpleVoiceAssistant.css";
 const VoiceWidget = () => {
     const [showSupport, setShowSupport] = useState(false);
     const { user } = useAuth();
+    const location = useLocation();
 
-    // Only show if user is logged in
-    if (!user) return null;
+    // Only show on dashboard and universities pages
+    const allowedPaths = ['/dashboard', '/universities'];
+    const isAllowedPage = allowedPaths.includes(location.pathname);
+
+    // Only show if user is logged in and on allowed pages
+    if (!user || !isAllowedPage) return null;
 
     return (
         <>

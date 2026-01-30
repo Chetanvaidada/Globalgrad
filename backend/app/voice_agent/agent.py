@@ -5,6 +5,7 @@ import logging
 import os
 
 import sys
+import json
 
 
 
@@ -19,15 +20,10 @@ from dataclasses import dataclass
 from dotenv import load_dotenv
 
 from livekit.agents import (
-
     AutoSubscribe,
-
     JobContext,
-
     WorkerOptions,
-
     cli,
-
 )
 
 from livekit.agents.llm import function_tool
@@ -44,9 +40,10 @@ from livekit.plugins import google
 
 from app.db.session import SessionLocal
 
+# Import all related models to ensure SQLAlchemy relationships resolve properly
+from app.models.user import User
 from app.models.onboarding import UserOnboarding
-
-from app.models.university import UniversityStatus
+from app.models.university import UniversityStatus, UserUniversity
 
 from app.crud import crud_university
 
@@ -72,9 +69,10 @@ class UserData:
 
 class Assistant(Agent):
 
-    def __init__(self) -> None:
+    def __init__(self, room) -> None:
 
         super().__init__(instructions=SYSTEM_INSTRUCTION)
+        self.room = room
 
 
 
@@ -174,6 +172,11 @@ class Assistant(Agent):
 
             )
 
+            await self.room.local_participant.publish_data(
+                payload=json.dumps({"type": "university_update", "action": "shortlist", "id": university_id}),
+                topic="university_update"
+            )
+
             return f"Successfully added {university_id} to shortlist."
 
         except Exception as e:
@@ -222,6 +225,11 @@ class Assistant(Agent):
 
                 UniversityStatus.locked,
 
+            )
+
+            await self.room.local_participant.publish_data(
+                payload=json.dumps({"type": "university_update", "action": "lock", "id": university_id}),
+                topic="university_update"
             )
 
             return f"Successfully locked {university_id}."
@@ -326,18 +334,15 @@ async def entrypoint(ctx: JobContext):
 
 
 
+    logger.info(f"Initializing agent session for user_id={user_id} (identity={participant.identity})")
+
     session = AgentSession(
-
         llm=google.realtime.RealtimeModel(
-
             voice="Puck",
-
             temperature=0.8,
-
+            language="en-US",
         ),
-
         userdata=UserData(user_id=user_id),
-
     )
 
 
@@ -386,11 +391,14 @@ async def entrypoint(ctx: JobContext):
 
     await session.start(
 
-        agent=Assistant(),
+        agent=Assistant(room=ctx.room),
 
         room=ctx.room,
 
-        room_options=RoomOptions(participant_identity=participant.identity),
+        room_options=RoomOptions(
+            participant_identity=participant.identity,
+            close_on_disconnect=False,
+        ),
 
     )
 
@@ -401,11 +409,8 @@ async def entrypoint(ctx: JobContext):
 
 
     session.generate_reply(
-
         instructions=f"Say exactly this greeting to the user: {WELCOME_MESSAGE}",
-
         allow_interruptions=True,
-
     )
 
 
