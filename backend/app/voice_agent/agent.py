@@ -6,6 +6,8 @@ import os
 
 import sys
 import json
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
 
@@ -417,7 +419,26 @@ async def entrypoint(ctx: JobContext):
 
 
 
-if __name__ == "__main__":
 
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+    def log_message(self, format, *args):
+        # Silence the default server logs to keep the console clean
+        return
+
+def run_health_check_server():
+    port = int(os.getenv("PORT", 8080))
+    server = HTTPServer(("0.0.0.0", port), HealthCheckHandler)
+    logger.info(f"Starting health check server on port {port}")
+    server.serve_forever()
+
+if __name__ == "__main__":
+    # Start health check server in a background thread for Render
+    threading.Thread(target=run_health_check_server, daemon=True).start()
+    
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
 
