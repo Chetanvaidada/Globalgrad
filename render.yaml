@@ -52,9 +52,8 @@ services:
         sync: false
 
   # Frontend
-  - type: web
+  - type: static
     name: ai-counsellor-ui
-    env: static
     buildCommand: cd frontend && npm install && npm run build
     publishPath: frontend/dist
     envVars:
