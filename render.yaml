@@ -52,7 +52,7 @@ services:
         sync: false
 
   # Frontend
-  - type: static
+  - type: static_site
     name: ai-counsellor-ui
     buildCommand: cd frontend && npm install && npm run build
     publishPath: frontend/dist
