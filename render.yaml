@@ -55,10 +55,7 @@ services:
   - type: static_site
     name: ai-counsellor-ui
     buildCommand: cd frontend && npm install && npm run build
-    publishPath: frontend/dist
+    staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_URL
-        fromService:
-          name: ai-counsellor-api
-          type: web
-          property: host
+        value: https://ai-counsellor-api.onrender.com
