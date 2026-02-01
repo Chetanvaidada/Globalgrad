@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
+    COOKIE_SAMESITE: str = "lax"
+    COOKIE_SECURE: bool = False
+
     # CORS: when using cookies (allow_credentials=True), origins cannot be "*". Comma-separated list. Set in .env.
     BACKEND_CORS_ORIGINS: str
 

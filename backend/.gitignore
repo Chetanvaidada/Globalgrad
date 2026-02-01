@@ -11,6 +11,7 @@ env/
 # Environment Variables
 .env
 .env.*
+agent.yaml
 
 # Distribution / Packaging
 dist/

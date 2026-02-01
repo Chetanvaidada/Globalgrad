@@ -30,4 +30,3 @@ After you have the `DATABASE_URL`, you can run the migrations locally to set up 
    alembic upgrade head
    ```
 
-Alternatively, you can wait for the Render deployment; the `render.yaml` is set up to deploy correctly, but the tables must exist.

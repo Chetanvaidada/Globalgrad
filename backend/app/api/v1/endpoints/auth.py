@@ -37,8 +37,8 @@ def signup(response: Response, user_in: UserCreate, db: Session = Depends(get_db
         value=f"Bearer {access_token}",
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="lax",
-        secure=False,
+        samesite=settings.COOKIE_SAMESITE,
+        secure=settings.COOKIE_SECURE,
     )
     return user
 
@@ -58,8 +58,8 @@ def login(response: Response, user_in: UserLogin, db: Session = Depends(get_db))
         value=f"Bearer {access_token}",
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="lax",
-        secure=False, # Set to True in production with HTTPS
+        samesite=settings.COOKIE_SAMESITE,
+        secure=settings.COOKIE_SECURE,
     )
     
     return {"message": "Success", "user": user}
@@ -87,8 +87,8 @@ def google_login(response: Response, token_data: dict, db: Session = Depends(get
         value=f"Bearer {access_token}",
         httponly=True,
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        samesite="lax",
-        secure=False,
+        samesite=settings.COOKIE_SAMESITE,
+        secure=settings.COOKIE_SECURE,
     )
     
     return {"message": "Success", "user": user}
