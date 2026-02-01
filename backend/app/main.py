@@ -5,6 +5,9 @@ from app.core.config import settings
 from app.db.session import engine, Base
 import app.models.user  # noqa: F401
 import app.models.onboarding  # noqa: F401  # register tables for create_all
+from sqlalchemy.orm import Session
+from fastapi import Depends
+from app.db.session import get_db
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
