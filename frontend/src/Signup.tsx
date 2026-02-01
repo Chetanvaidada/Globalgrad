@@ -13,6 +13,7 @@ const Signup: React.FC = () => {
 
     const [notice, setNotice] = useState<string | null>(null);
     const [isWakingUp, setIsWakingUp] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const pendingNoticeTimerRef = useRef<number | null>(null);
 
@@ -27,7 +28,7 @@ const Signup: React.FC = () => {
         clearPendingNoticeTimer();
         pendingNoticeTimerRef.current = window.setTimeout(() => {
             showBackendWakingNotice();
-        }, 8000);
+        }, 2000);
     };
 
     useEffect(() => {
@@ -55,6 +56,8 @@ const Signup: React.FC = () => {
         const email = decoded.email;
 
         try {
+            setNotice('Signing in…');
+            setIsSubmitting(true);
             startPendingNoticeTimer();
             const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/google-login`, {
                 method: 'POST',
@@ -72,6 +75,8 @@ const Signup: React.FC = () => {
 
             if (response.ok) {
                 login(data.user);
+                setNotice(null);
+                setIsWakingUp(false);
                 navigate('/onboarding');
             } else if (isLikelyRenderSleep(response)) {
                 showBackendWakingNotice();
@@ -87,6 +92,7 @@ const Signup: React.FC = () => {
             }
         } finally {
             clearPendingNoticeTimer();
+            setIsSubmitting(false);
         }
     };
 
@@ -96,7 +102,9 @@ const Signup: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setNotice(null);
+        setNotice('Creating account…');
+        setIsSubmitting(true);
+        startPendingNoticeTimer();
 
         const fullName = (e.target as any).elements[0].value;
         const email = (e.target as any).elements[1].value;
@@ -119,6 +127,8 @@ const Signup: React.FC = () => {
 
             if (response.ok) {
                 login(data);
+                setNotice(null);
+                setIsWakingUp(false);
                 navigate('/onboarding');
             } else if (isLikelyRenderSleep(response)) {
                 showBackendWakingNotice();
@@ -132,6 +142,9 @@ const Signup: React.FC = () => {
             } else {
                 alert('Signup failed');
             }
+        } finally {
+            clearPendingNoticeTimer();
+            setIsSubmitting(false);
         }
     };
 
@@ -214,8 +227,8 @@ const Signup: React.FC = () => {
                             </div>
                         </div>
 
-                        <button type="submit" className="btn-auth" disabled={isWakingUp}>
-                            {isWakingUp ? 'Waking server…' : 'Create Account'} <ArrowRight size={18} />
+                        <button type="submit" className="btn-auth" disabled={isSubmitting || isWakingUp}>
+                            {isWakingUp ? 'Waking server…' : (isSubmitting ? 'Creating account…' : 'Create Account')} <ArrowRight size={18} />
                         </button>
                     </form>
                 </div>
