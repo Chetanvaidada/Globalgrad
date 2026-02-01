@@ -22,6 +22,12 @@ app.add_middleware(
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+@app.get("/health/db")
+def db_health(db: Session = Depends(get_db)):
+    db.execute("SELECT 1")
+    return {"db": "ok"}
+
+
 @app.get("/")
 def root():
     return {"message": f"Welcome to {settings.PROJECT_NAME} API"}
