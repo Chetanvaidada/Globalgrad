@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { GraduationCap, ArrowRight, Mail, Lock, User } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
@@ -11,25 +11,82 @@ const Signup: React.FC = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
 
+    const [notice, setNotice] = useState<string | null>(null);
+    const [isWakingUp, setIsWakingUp] = useState(false);
+
+    const pendingNoticeTimerRef = useRef<number | null>(null);
+
+    const clearPendingNoticeTimer = () => {
+        if (pendingNoticeTimerRef.current !== null) {
+            window.clearTimeout(pendingNoticeTimerRef.current);
+            pendingNoticeTimerRef.current = null;
+        }
+    };
+
+    const startPendingNoticeTimer = () => {
+        clearPendingNoticeTimer();
+        pendingNoticeTimerRef.current = window.setTimeout(() => {
+            showBackendWakingNotice();
+        }, 8000);
+    };
+
+    useEffect(() => {
+        return () => {
+            clearPendingNoticeTimer();
+        };
+    }, []);
+
+    const showBackendWakingNotice = () => {
+        setNotice('Server is waking up (Render sleeps after inactivity). Please wait 1–2 minutes and try again.');
+        setIsWakingUp(true);
+        window.setTimeout(() => setIsWakingUp(false), 90_000);
+    };
+
+    const isLikelyRenderSleep = (response?: Response, error?: unknown) => {
+        if (response && [502, 503, 504].includes(response.status)) return true;
+        if (error && typeof error === 'object' && 'name' in error && (error as any).name === 'AbortError') return true;
+        if (error instanceof TypeError) return true;
+        return false;
+    };
+
     const handleGoogleSuccess = async (credentialResponse: any) => {
         const decoded: any = jwtDecode(credentialResponse.credential);
         const name = decoded.name;
         const email = decoded.email;
 
         try {
+            startPendingNoticeTimer();
             const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/google-login`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, name })
             });
-            const data = await response.json();
+
+            let data: any = null;
+            try {
+                data = await response.json();
+            } catch {
+                data = null;
+            }
+
             if (response.ok) {
                 login(data.user);
                 navigate('/onboarding');
+            } else if (isLikelyRenderSleep(response)) {
+                showBackendWakingNotice();
+            } else {
+                alert(data?.detail || 'Signup failed');
             }
         } catch (error) {
             console.error("Signup failed", error);
+            if (isLikelyRenderSleep(undefined, error)) {
+                showBackendWakingNotice();
+            } else {
+                alert('Signup failed');
+            }
+        } finally {
+            clearPendingNoticeTimer();
         }
     };
 
@@ -39,6 +96,8 @@ const Signup: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setNotice(null);
+
         const fullName = (e.target as any).elements[0].value;
         const email = (e.target as any).elements[1].value;
         const password = (e.target as any).elements[2].value;
@@ -50,15 +109,29 @@ const Signup: React.FC = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ full_name: fullName, email, password })
             });
-            const data = await response.json();
+
+            let data: any = null;
+            try {
+                data = await response.json();
+            } catch {
+                data = null;
+            }
+
             if (response.ok) {
                 login(data);
                 navigate('/onboarding');
+            } else if (isLikelyRenderSleep(response)) {
+                showBackendWakingNotice();
             } else {
-                alert(data.detail);
+                alert(data?.detail || 'Signup failed');
             }
         } catch (error) {
             console.error("Signup failed", error);
+            if (isLikelyRenderSleep(undefined, error)) {
+                showBackendWakingNotice();
+            } else {
+                alert('Signup failed');
+            }
         }
     };
 
@@ -74,6 +147,12 @@ const Signup: React.FC = () => {
                     <h1 className="auth-title">Join Globalgrad</h1>
                     <p className="auth-subtitle">Create your account to start your journey</p>
                 </div>
+
+                {notice && (
+                    <div className="auth-notice" role="alert">
+                        {notice}
+                    </div>
+                )}
 
                 <div className="auth-methods">
                     <div className="google-btn-wrapper">
@@ -135,8 +214,8 @@ const Signup: React.FC = () => {
                             </div>
                         </div>
 
-                        <button type="submit" className="btn-auth">
-                            Create Account <ArrowRight size={18} />
+                        <button type="submit" className="btn-auth" disabled={isWakingUp}>
+                            {isWakingUp ? 'Waking server…' : 'Create Account'} <ArrowRight size={18} />
                         </button>
                     </form>
                 </div>

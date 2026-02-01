@@ -54,6 +54,17 @@
     gap: 1.5rem;
 }
 
+.auth-notice {
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    color: rgba(255, 255, 255, 0.92);
+    border-radius: 12px;
+    padding: 0.75rem 0.9rem;
+    font-size: 0.9rem;
+    line-height: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
 .btn-google {
     display: flex;
     align-items: center;
@@ -147,6 +158,12 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+}
+
+.btn-auth:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .btn-auth:hover {
